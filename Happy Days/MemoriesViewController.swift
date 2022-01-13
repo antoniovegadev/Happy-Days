@@ -10,9 +10,13 @@ import AVFoundation
 import Photos
 import Speech
 
-class MemoriesViewController: UICollectionViewController {
+class MemoriesViewController: UICollectionViewController, AVAudioRecorderDelegate {
 
     var memories = [URL]()
+    var activeMemory: URL!
+    var audioRecorder: AVAudioRecorder?
+    var recordingURL: URL!
+    var audioPlayer: AVAudioPlayer?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,6 +24,8 @@ class MemoriesViewController: UICollectionViewController {
         loadMemories()
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
+
+        recordingURL = getDocumentsDirectory().appendingPathComponent("recording.m4a")
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -48,6 +54,15 @@ class MemoriesViewController: UICollectionViewController {
         let image = UIImage(contentsOfFile: imageName)
         cell.imageView.image = image
 
+        if cell.gestureRecognizers == nil {
+            let recognizer = UILongPressGestureRecognizer(target: self, action: #selector(memoryLongPress))
+            recognizer.minimumPressDuration = 0.25
+            cell.addGestureRecognizer(recognizer)
+
+            cell.layer.borderColor = UIColor.white.cgColor
+            cell.layer.borderWidth = 3
+            cell.layer.cornerRadius = 10
+        }
         return cell
     }
 
@@ -158,6 +173,122 @@ class MemoriesViewController: UICollectionViewController {
         navigationController?.present(vc, animated: true)
     }
 
+    @objc func memoryLongPress(sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            let cell = sender.view as! MemoryCell
+
+            if let index = collectionView?.indexPath(for: cell) {
+                activeMemory = memories[index.row]
+                recordMemory()
+            }
+        } else if sender.state == .ended {
+            finishRecording(success: true)
+        }
+    }
+
+    func recordMemory() {
+        audioPlayer?.stop()
+
+        collectionView?.backgroundColor = UIColor(red: 0.5, green: 0, blue: 0, alpha: 1)
+
+        let recordingSession = AVAudioSession.sharedInstance()
+
+        do {
+            try recordingSession.setCategory(.playAndRecord, mode: .default, options: .defaultToSpeaker)
+            try recordingSession.setActive(true)
+
+            let settings = [
+                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+                AVSampleRateKey: 44100,
+                AVNumberOfChannelsKey: 2,
+                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+            ]
+
+            audioRecorder = try AVAudioRecorder(url: recordingURL, settings: settings)
+            audioRecorder?.delegate = self
+            audioRecorder?.record()
+        } catch let error {
+            print("Failed to record: \(error)")
+            finishRecording(success: false)
+        }
+    }
+
+    func finishRecording(success: Bool) {
+        collectionView?.backgroundColor = UIColor.darkGray
+
+        audioRecorder?.stop()
+
+        if success {
+            do {
+                let memoryAudioURL = activeMemory.appendingPathExtension("m4a")
+                let fm = FileManager.default
+
+                if fm.fileExists(atPath: memoryAudioURL.path) {
+                    try fm.removeItem(at: memoryAudioURL)
+                }
+
+                try fm.moveItem(at: recordingURL, to: memoryAudioURL)
+
+                transcribeAudio(memory: activeMemory)
+            } catch let error {
+                print("Failure finishing recording: \(error)")
+            }
+        }
+    }
+
+    func transcribeAudio(memory: URL) {
+        let audio = audioURL(for: memory)
+        let transcription = transcriptionURL(for: memory)
+
+        let recognizer = SFSpeechRecognizer()
+        let request = SFSpeechURLRecognitionRequest(url: audio)
+
+        recognizer?.recognitionTask(with: request) { [unowned self] (result, error) in
+            guard let result = result else {
+                print("There was an error: \(error!)")
+                return
+            }
+
+            if result.isFinal {
+                let text = result.bestTranscription.formattedString
+
+                do {
+                    try text.write(to: transcription, atomically: true, encoding: String.Encoding.utf8)
+                } catch {
+                    print("Failed to save transcription")
+                }
+            }
+
+        }
+    }
+
+    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        if !flag {
+            finishRecording(success: false)
+        }
+    }
+
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let memory = memories[indexPath.row]
+        let fm = FileManager.default
+
+        do {
+            let audioName = audioURL(for: memory)
+            let transcriptionName = transcriptionURL(for: memory)
+
+            if fm.fileExists(atPath: audioName.path) {
+                audioPlayer = try AVAudioPlayer(contentsOf: audioName)
+                audioPlayer?.play()
+            }
+
+            if fm.fileExists(atPath: transcriptionName.path) {
+                let contents = try String(contentsOf: transcriptionName)
+                print(contents)
+            }
+        } catch  {
+            print("Error loading audio")
+        }
+    }
 }
 
 extension MemoriesViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate, UICollectionViewDelegateFlowLayout {
