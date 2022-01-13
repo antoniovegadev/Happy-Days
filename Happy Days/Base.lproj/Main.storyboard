@@ -5,7 +5,6 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
-        <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -64,8 +63,8 @@
                     <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="bMd-i9-rj6">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="20" minimumInteritemSpacing="20" id="vGp-Zn-PAO">
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="20" minimumInteritemSpacing="20" id="vGp-Zn-PAO">
                             <size key="itemSize" width="200" height="200"/>
                             <size key="headerReferenceSize" width="50" height="50"/>
                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
@@ -75,7 +74,7 @@
                             <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Memory" id="Ypm-5M-T4p" customClass="MemoryCell" customModule="Happy_Days" customModuleProvider="target">
                                 <rect key="frame" x="107" y="50" width="200" height="200"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="NHE-lB-MDJ">
+                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
                                     <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
@@ -83,13 +82,14 @@
                                             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                                         </imageView>
                                     </subviews>
-                                    <constraints>
-                                        <constraint firstItem="NvP-Vr-21Z" firstAttribute="centerX" secondItem="NHE-lB-MDJ" secondAttribute="centerX" id="CSw-37-VKq"/>
-                                        <constraint firstItem="NvP-Vr-21Z" firstAttribute="top" secondItem="NHE-lB-MDJ" secondAttribute="top" id="PCp-5U-VAq"/>
-                                        <constraint firstItem="NvP-Vr-21Z" firstAttribute="centerY" secondItem="NHE-lB-MDJ" secondAttribute="centerY" id="gMd-Vd-dar"/>
-                                        <constraint firstItem="NvP-Vr-21Z" firstAttribute="leading" secondItem="NHE-lB-MDJ" secondAttribute="leading" id="ogr-1y-NFR"/>
-                                    </constraints>
-                                </collectionViewCellContentView>
+                                </view>
+                                <constraints>
+                                    <constraint firstItem="NvP-Vr-21Z" firstAttribute="centerX" secondItem="Ypm-5M-T4p" secondAttribute="centerX" id="CSw-37-VKq"/>
+                                    <constraint firstItem="NvP-Vr-21Z" firstAttribute="top" secondItem="Ypm-5M-T4p" secondAttribute="top" id="PCp-5U-VAq"/>
+                                    <constraint firstItem="NvP-Vr-21Z" firstAttribute="centerY" secondItem="Ypm-5M-T4p" secondAttribute="centerY" id="gMd-Vd-dar"/>
+                                    <constraint firstItem="NvP-Vr-21Z" firstAttribute="leading" secondItem="Ypm-5M-T4p" secondAttribute="leading" id="ogr-1y-NFR"/>
+                                </constraints>
+                                <size key="customSize" width="200" height="200"/>
                                 <connections>
                                     <outlet property="imageView" destination="NvP-Vr-21Z" id="7xK-QH-pwj"/>
                                 </connections>
@@ -99,9 +99,8 @@
                             <rect key="frame" x="0.0" y="0.0" width="414" height="50"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <subviews>
-                                <searchBar contentMode="redraw" fixedFrame="YES" searchBarStyle="minimal" translatesAutoresizingMaskIntoConstraints="NO" id="VTU-Uj-R0Z">
+                                <searchBar contentMode="redraw" searchBarStyle="minimal" translatesAutoresizingMaskIntoConstraints="NO" id="VTU-Uj-R0Z">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                     <textInputTraits key="textInputTraits"/>
                                     <userDefinedRuntimeAttributes>
                                         <userDefinedRuntimeAttribute type="color" keyPath="searchField.textColor">
@@ -113,6 +112,12 @@
                                     </connections>
                                 </searchBar>
                             </subviews>
+                            <constraints>
+                                <constraint firstItem="VTU-Uj-R0Z" firstAttribute="centerX" secondItem="eSX-rZ-pFi" secondAttribute="centerX" id="4C2-Lf-hxc"/>
+                                <constraint firstItem="VTU-Uj-R0Z" firstAttribute="top" secondItem="eSX-rZ-pFi" secondAttribute="topMargin" constant="-8" id="6fn-T7-vrV"/>
+                                <constraint firstAttribute="bottomMargin" secondItem="VTU-Uj-R0Z" secondAttribute="bottom" constant="-2" id="UH9-tN-efz"/>
+                                <constraint firstItem="VTU-Uj-R0Z" firstAttribute="leading" secondItem="eSX-rZ-pFi" secondAttribute="leadingMargin" constant="-8" id="tYq-Y7-2Z9"/>
+                            </constraints>
                         </collectionReusableView>
                         <connections>
                             <outlet property="dataSource" destination="i3n-Yd-Kp4" id="QZM-Ia-vi5"/>
