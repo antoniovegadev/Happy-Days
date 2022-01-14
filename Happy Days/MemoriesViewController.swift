@@ -9,6 +9,8 @@ import UIKit
 import AVFoundation
 import Photos
 import Speech
+import CoreSpotlight
+import MobileCoreServices
 
 class MemoriesViewController: UICollectionViewController, AVAudioRecorderDelegate {
 
@@ -254,6 +256,7 @@ class MemoriesViewController: UICollectionViewController, AVAudioRecorderDelegat
 
                 do {
                     try text.write(to: transcription, atomically: true, encoding: String.Encoding.utf8)
+                    self.indexMemory(memory: memory, text: text)
                 } catch {
                     print("Failed to save transcription")
                 }
@@ -287,6 +290,25 @@ class MemoriesViewController: UICollectionViewController, AVAudioRecorderDelegat
             }
         } catch  {
             print("Error loading audio")
+        }
+    }
+
+    func indexMemory(memory: URL, text: String) {
+        let attributeSet = CSSearchableItemAttributeSet(contentType: UTType.text)
+        attributeSet.title = "Happy Days Memory"
+        attributeSet.contentDescription = text
+        attributeSet.thumbnailURL = thumbnailURL(for: memory)
+
+        let item = CSSearchableItem(uniqueIdentifier: memory.path, domainIdentifier: "dev.antoniovega", attributeSet: attributeSet)
+
+        item.expirationDate = Date.distantFuture
+
+        CSSearchableIndex.default().indexSearchableItems([item]) { error in
+            if let error = error {
+                print("Indexing error: \(error.localizedDescription)")
+            } else {
+                print("Search item successfully indexed: \(text)")
+            }
         }
     }
 }
